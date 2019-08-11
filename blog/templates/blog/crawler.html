@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>My Instagram Crawler</title>
+
+    <!-- Custom fonts for this template -->
+    <link href='{%static "theme/vendor/fontawesome-free/css/all.min.css" %}'rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href='{%static "theme/css/sb-admin-2.min.css" %}' rel="stylesheet">
+
+    <!-- Custom styles for this page -->
+    <link href='{%static "theme/vendor/datatables/dataTables.bootstrap4.min.css" %}' rel="stylesheet">
+    <style>
+        .tags{border-right: none !important;border-left: none !important;border-bottom: none !important;}
+        .ntag td{border-top: none !important;}
+        .tags div{width: 100%}
+        .tags span:nth-child(1){width: 70%}
+        .tags span:nth-child(2){width: 30%;cursor: pointer}
+        .row>div{width: 100%}
+        .row>div>div{width: 32%}
+        .rowBox{display: inline-flex;position: relative;}
+        .rowBox{display: inline-flex;position: relative;}
+        .space{width: 1%!important}
+        #generate{cursor: pointer;}
+        #tagTable,#gridTable{overflow: scroll;max-height: 404px;}
+        .progress_sentence{
+            margin: auto;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 10;
+            color: black;
+        }
+        .container-fluid{margin-top: 20px;}
+        .progressWrapper,.progressWrapper2{ /*화면 전체를 어둡게 합니다.*/
+            position: fixed;
+            left:0;
+            right:0;
+            top:0;
+            bottom:0;
+            background: rgba(0,0,0,0.2); /*not in ie */
+            filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr='#20000000', endColorstr='#20000000');
+        }
+        #progressbar,#progressbar2{ /*로딩 이미지*/
+            position: fixed;
+            width: 0%;
+            height: 10%;
+        }
+        .progress,.progress2{
+            position: fixed;
+            top:40%;
+            left:15%;
+            width: 70%;
+            height: 10%;
+        }
+        .display-none{ /*감추기*/
+            display:none;
+        }
+
+    </style>
+</head>
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+      <!-- Sidebar - Brand -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Instagram Crawler</div>
+      </a>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider my-0">
+
+
+      <!-- Divider -->
+      <hr class="sidebar-divider">
+
+      <!-- Heading -->
+      <div class="sidebar-heading">
+        Addons
+      </div>
+      
+      <!-- Nav Item - Tables -->
+      <li class="nav-item">
+        <a class="nav-link" href="tables">
+          <i class="fas fa-fw fa-table"></i>
+          <span>Tables</span></a>
+      </li>
+
+      <!-- Nav Item - Tables -->
+      <li class="nav-item">
+          <a class="nav-link" href="crawler">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Crawler</span></a>
+        </li>
+        
+      <!-- Divider -->
+      <hr class="sidebar-divider d-none d-md-block">
+
+      <!-- Sidebar Toggler (Sidebar) -->
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+  
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <h1 class="h3 mb-2 text-gray-800">크롤러</h1>
+          <p class="mb-4">크롤링 조건을 선택하며 크롤링 결과물의 데이터를 다운로드 할 수 있습니다.</a>.</p>
+
+          <!-- DataTales Example -->
+          <div class="card shadow mb-4" id="donutBox">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">크롤링 태그 필터</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                    <div class="btn-group btn-group-justified" role="group" style="width: 100%">
+                        <div style="width: 5%"></div>
+                        <div class="btn-group" role="group" style="width: 20%;margin: auto">
+                            <label for="tagType" style="width:50%;margin: auto">필터종류</label>
+                            <select name="tagType" class="custom-select custom-select-sm form-control form-control-sm" id="tagType" style="width:50%;margin: auto">
+                                <option value="0">긍정필터</option>
+                                <option value="1">부정필터</option>
+                            </select>
+                        </div>
+                        <div style="width: 5%"></div>
+                        <div class="btn-group" role="group" style="width: 20%;margin: auto">
+                            <label for="initTag" style="width:50%;margin: auto">태그명</label>
+                            <input type="text" class="form-control" name="initTag" id="initTag"  style="width:50%"/>
+                        </div>
+                        <div style="width: 5%"></div>
+                        <div class="btn-group" role="group" style="width: 20%;margin: auto">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" name="submitTag" id="submitTag" onclick="modifyTagList()"  style="width:25%;max-width: 100px;">적용</button>
+                        </div>
+                        <div style="width: 5%"></div>
+                        <div class="btn-group" role="group" style="width: 20%;margin: auto">
+                            <label for="crawlCnt" style="width:50%;margin: auto">횟수</label>
+                            <input type="number" class="form-control" min="1" max="100000" name="initTag" id="crawlCnt" style="width:50%;margin: auto"/>
+                        </div>
+                    </div>
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                      
+                        <tbody>
+                            <tr class="ptag">
+                                <th>긍정필터</th>
+                                {% for p in ptag%}
+                                    <td class="tags">
+                                        <div class="btn btn-primary btn-icon-split">
+                                            <span class="text">{{p}}</span>
+                                            <span class="icon text-white-50" onclick="removeTag(this)">
+                                                <i class="fas fa-trash"> 
+                                                </i>
+                                            </span>
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr class="ntag">
+                                <th>부정필터</th>
+                                {% for n in ntag%}
+                                    <td class="tags">
+                                        <div class="btn btn-primary btn-icon-split">
+                                            <span class="text">{{n}}</span>
+                                            <span class="icon text-white-50" onclick="removeTag(this)">
+                                                <i class="fas fa-trash">
+                                                </i>
+                                            </span>
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                <div class="btn btn-facebook btn-block" id="generate" onclick="generateCrawling()">
+                        시작
+                </div>
+              </div>
+            </div>
+          </div>
+                   <!-- Content Row -->
+        <div class="row display-none">
+
+            <div class="rowBox">
+                <div class="space"></div>
+                <div class="card shadow mb-4" id="gridTable">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>항목</th>
+                                        <th>비고</th>
+                                    </tr>
+                                </thead>
+                            <tbody id="crawlContent">
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="space"></div>
+                <div class="card shadow mb-4" id="tagTable">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">태그 랭킹</h6>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          
+                          <th>태그명</th>
+                          <th>태그수량</th>
+                        </tr>
+                      </thead>
+                      <tfoot id="tagttl">
+                        <tr>
+                            <td>전체수량</td>
+                            <td></td>
+                        </tr>
+                      </tfoot>
+                      <tbody id="tagrnk">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="space"></div>
+            <!-- Donut Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">태그 비율 그래프</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-pie pt-4">
+                    <canvas id="tagChart"></canvas>
+                    </div>
+                    <hr>
+                </div>
+                </div>
+            </div>
+        </div>
+                          <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <div class="btn btn-success btn-icon-split" style="width: 200px;cursor: pointer">
+                        <span class="icon text-white-50" style="width: 20%">
+                            <i class="fas fa-check">
+                            </i>
+                        </span>
+                        <span class="text" style="width: 80%" onclick="saveData()">저장</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    </div>
+
+      <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+    <div class="progressWrapper display-none">
+        <div class="progress">
+            <p class="progress_sentence">현재 크롤링작업이 진행중입니다. 잠시 기다려 주십시오.</p>
+            <div class="progress-bar progress-bar-striped active" id = "progressbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+
+    <div class="progressWrapper2 display-none">
+        <div class="progress2">
+            <p class="progress_sentence">크롤링 수집 데이터를 저장합니다. 엑셀파일을 함께 저장합니다.</p>
+            <div class="progress-bar2 progress-bar-striped active" id = "progressbar2" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Bootstrap core JavaScript-->
+  <script type="text/javascript" src='{%static "theme/vendor/jquery/jquery.min.js" %}'></script>
+  <script type="text/javascript" src='{%static "theme/vendor/bootstrap/js/bootstrap.bundle.min.js" %}'></script>
+
+  <!-- Core plugin JavaScript-->
+  <script type="text/javascript" src='{%static "theme/vendor/jquery-easing/jquery.easing.min.js" %}'></script>
+
+  <!-- Custom scripts for all pages-->
+  <script type="text/javascript" src='{%static "theme/js/sb-admin-2.min.js" %}'></script>
+
+  <!-- Page level plugins -->
+  <script type="text/javascript" src='{%static "theme/vendor/datatables/jquery.dataTables.min.js" %}'></script>
+  <script type="text/javascript" src='{%static "theme/vendor/datatables/dataTables.bootstrap4.min.js" %}'></script>
+
+  <!-- Page level custom scripts -->
+  <script type="text/javascript" src='{%static "theme/js/demo/datatables-demo.js" %}'></script>
+    <!-- Page level plugins -->
+    <script src='{%static "theme/vendor/chart.js/Chart.min.js" %}'src=""></script>
+
+  <script>
+    var excelList = new Array();
+    var crawlingList = new Map();
+    var tagList = new Map();
+    var click = true;
+
+    function overClick(click) {
+         if (click) {
+            click = !click;
+            
+            // 타이밍 추가
+            setTimeout(function () {
+                click = true;
+            }, 2000)
+            
+         } else {
+            alert("이미 시작되었습니다.");
+         }
+    }
+
+    function modifyTagList(){
+        var tag = "";
+        if ($("#tagType option:selected").val()==0) {
+            tag = "ptag";
+        } else {
+            tag = "ntag";
+        }
+
+        if ($("."+tag+" td").length-1 == 9) {
+            alert("각 항목의 태그는 10개까지만 가능합니다.")
+            return;
+        }
+        
+        var initTag = $("#initTag").val()
+        
+        if (initTag == "" || initTag == " " || initTag == null) {
+            alert("태그를 입력해 주십시오.");
+            return;
+        }
+
+        getTags(initTag,"duplicate");
+
+        $("."+tag).append("<td></td>");
+        $("."+tag+" td").last().append("<div></div>").addClass("tags");
+        $("."+tag+" td").last().children("div").addClass("btn btn-primary btn-icon-split").append("<span></span>").append("<span></span>")
+        $("."+tag+" td").last().children("div").children("span").eq(0).addClass("text").text(initTag)
+        $("."+tag+" td").last().children("div").children("span").eq(1).addClass("icon text-white-50").append("<i><i/>").attr("onclick","removeTag(this)")
+        $("."+tag+" td").last().children("div").children("span").eq(1).children("i").addClass("fas fa-trash")
+    }
+
+    function removeTag(key) {
+        $(key).parents("td").remove()
+    }
+
+    function clear(){
+        $("#crawlContent").children().remove();
+        $("#tagrnk").children().remove();
+        $("#tagttl").children().remove();
+        $("#tagChart").remove();
+        $(".chart-pie").children().remove()
+        $(".chart-pie").append("<canvas></canvas>");
+        $(".chart-pie canvas").attr("id","tagChart");
+        $(".row").fadeOut("slow");
+    }
+
+    function generateCrawling() {
+        if (click) {
+            clear();
+            overClick(true);
+
+            var tags = getTags("tag","get");
+            var count = $("#crawlCnt").val();
+
+            if (count < 1) {
+                alert("크롤링 조회 횟수를 지정해주세요.");
+                return;
+            }
+            
+            if (tags.ntag.length > 0 || tags.ptag.length > 0) {
+                $.ajax({
+                    type : "POST",
+                    url : "{% url 'generate' %}",
+                    data : {"tags" : JSON.stringify(tags), "count" : count, "csrfmiddlewaretoken" : "{{ csrf_token }}"},
+                    dataType : "json",
+                    beforeSend: function() {
+                        $(".progressWrapper").removeClass("display-none");
+                        $("#progressbar").css("width","0%");
+                    },
+                    // uploadProgress: function(event, position, total, percentComplete) {
+                    //     console.log(percentComplete);
+                    //     $("#progressbar").css("width",percentComplete);
+                    //     $("#progressbar").text(percentComplete+"%");
+                    // },
+                    success : function(response) {
+                        $(".progressWrapper").addClass("display-none");
+                        if (response != null) {
+                            excelList = response.excelList;
+                            setTagRank(response.tagList);
+                            crawlingList = response.crawlingList;
+                            setGridTable(crawlingList);    
+                            setGraph(response.ratioMap);
+                            $(".row").fadeIn("slow");
+                        }
+                    },
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+                        $(".progressWrapper").removeClass("display-none");
+                        //Upload Progress
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = (evt.loaded / evt.total) * 100; 
+                                $('div.progress > div.progress-bar').css({ "width": percentComplete + "%" }); } }, false);
+                        return xhr;
+                        },
+                    error : function(request,status,error) {
+                        alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                    }
+                });
+            } else {
+                alert("태그가 제대로 취합되지 못했습니다. 다시 시도해주세요.");
+                return;
+            }
+        }
+    }
+
+    function setGraph(map) {
+        if (!map) {
+            return
+        } else {
+            var maxnum;
+            var minnum;
+            var tagCnt;
+
+            var ptag =map["ptagCnt"];
+            var ntag =map["ntagCnt"];
+            if(ptag >= ntag){ 
+                maxnum = ptag;
+                minnum = ntag;
+            }else{
+                maxnum = ntag;
+                minnum = ptag;
+            }
+
+            var dif = maxnum - minnum;
+            if (dif == 0) {
+                tagCnt = [maxnum,minnum];
+                tagLab = ["긍정적","부정적"];
+            } else {
+                tagCnt = [maxnum,minnum,dif];
+                tagLab = ["긍정적","부정적","그외"];
+            }
+        if (maxnum > 0 || minnum > 0) {
+            var ctx = document.getElementById("tagChart").getContext("2d");
+            var chart = new Chart(ctx,{
+                    type: "pie",
+                    data :{
+                        labels: tagLab,
+                        datasets: [
+                            {
+                                data: tagCnt,
+                                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                                hoverBorderColor: "rgba(234, 236, 244, 1)",
+                            }
+                        ],
+                    },
+                    options:{
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 80,
+                    }
+                });
+            
+            } else {
+                $(".chart-pie").children().remove();
+                $(".chart-pie").append("<p>필터링된 결과가 존재하지 않습니다.</p>");
+                $(".chart-pie p").css({
+                    "margin" : "auto",
+                    "text-align" : "center",
+                    "font-size" : "25px",
+                    "font-weight" : "bold",
+                    "margin-top" : "20%"
+                })
+            }
+        }
+    }
+
+    function setGridTable(list) {
+        var keys = Object.keys(list);
+        if (keys.length == 0 || keys.length == null) {
+            return;
+        } else {
+            for (let i = 0; i < keys.length; i++) {
+                $this = $("#crawlContent");
+                $this.append("<tr></tr>");
+                $this.children("tr").eq(i).append("<th></th>").append("<td></td>");
+                var title = "";
+                var text = list[keys[i]];
+                if (keys[i] == "ttlfeed") {
+                    title = "전체피드량"
+                } else if (keys[i] == "crwfeed"){
+                    title = "크롤링 피드량"
+                } else if (keys[i] == "succnt"){
+                    title = "성공 수량"
+                } else if (keys[i] == "failcnt"){
+                    title = "에러 수량"
+                } else if (keys[i] == "created_at"){
+                    title = "시작시간"
+                } else if (keys[i] == "updated_at"){
+                    title = "종료시간"
+                } else if (keys[i] == "working_while"){
+                    title = "진행시간"
+                } else if (keys[i] == "ptag"){
+                    title = "긍정태그 필터"
+                } else if (keys[i] == "ntag"){
+                    title = "부정태그 필터"
+                }
+                $this.find("th").eq(i).text(title);
+
+                if (text.length > 13) {
+                    text = list[keys[i]].substr(0,10)+"...";
+                }
+                $this.find("td").eq(i).text(list[keys[i]]);
+            }
+        }
+    }
+
+    function setTagRank(list){
+        if (list.length == 0) {
+            return;
+        } else {
+            if (list.length > 0) {
+                tagLen = 10
+            } else {
+                tagLen = list.length
+            }
+            $this = $("#tagrnk")
+            var keys = Object.keys(list);
+            var ttlcnt = 0;
+            for (let i = 0; i < tagLen; i++) {
+                $this.append("<tr></tr>");
+                $this.children("tr").eq(i).append("<td></td>").append("<td></td>");
+                $this.children("tr").eq(i).children("td").eq(0).text(list[i][0])
+                $this.children("tr").eq(i).children("td").eq(1).text(list[i][1])
+                ttlcnt += list[i][1];
+            }
+
+            $("#tagttl tr td").eq(1).text(ttlcnt)
+        }
+    }
+
+    function saveData(){
+        var keys = Object.keys(crawlingList);
+        if (keys.length == 0 || keys.length == null) {
+            alert("저장할 데이터가 없습니다.")
+            return;
+        }
+
+        if (confirm('크롤링 데이터를 저장하시겠습니까?')) {
+            $.ajax({
+                type : "POST",
+                url : "{% url 'savedata' %}",
+                data : {'crawlingList' : JSON.stringify(crawlingList), 'excelList' : JSON.stringify(excelList), 'csrfmiddlewaretoken' : "{{ csrf_token }}"},
+                async : false,
+                dataType : "json",
+                success : function(response) {
+                    if (response != null) {
+                        if (response.cnt > 0) {
+                            alert("저장을 완료하였습니다.");
+                            window.location.href = "{% url 'tables' %}";
+                        } else {
+                            alert("저장을 실패하였습니다.")
+                        }
+                    }
+                },
+                beforeSend: function() {
+                        $(".progressWrapper2").removeClass("display-none");
+                        $("#progressbar2").css("width","0%");
+                    },
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    $(".progressWrapper2").removeClass("display-none");
+                    //Upload Progress
+                    xhr.upload.addEventListener("progress2", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = (evt.loaded / evt.total) * 100; 
+                            $('div.progress2 > div.progress-bar2').css({ "width": percentComplete + "%" }); } }, false);
+                    return xhr;
+                    },
+                error : function(request,status,error) {
+                    alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                }
+            });     
+        }   
+    }
+
+    function getTags(tag,type) {
+        if (type == "duplicate") {
+            for (let i = 0; i < $(".ptag td").length; i++) {
+                if ($(".ptag td").eq(i).text().trim() == tag) {
+                    alert("태그는 중복될 수 없습니다.");
+                    return;
+                    }
+                }
+
+            for (let i = 0; i < $(".ntag td").length; i++) {
+                if ($(".ntag td").eq(i).text().trim() == tag) {
+                    alert("태그는 중복될 수 없습니다.");
+                    return;
+                }
+            } 
+        } else {
+            var tagRow = new Array();
+            var tags = new Object();
+
+            $this = $(".ptag td");
+            
+            if ($this.length > 0) {
+                for (let i = 0; i < $this.length; i++) {
+                    tagRow.push($this.eq(i).text().trim());
+                }
+                tags["ptag"] = tagRow;
+            }
+
+            $this = $(".ntag td");
+            tagRow = new Array();
+            
+            if ($this.length) {
+                for (let i = 0; i < $this.length; i++) {
+                    tagRow.push($this.eq(i).text().trim());
+                }
+                tags["ntag"] = tagRow;
+            }
+            return tags
+        }
+        
+    }
+      
+  </script>
+</body>
+
+</html>

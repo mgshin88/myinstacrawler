@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="ko">
+<head>
+  <title>My Little Lotto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link href="//fonts.googleapis.com/css?family=Space+Mono" rel="stylesheet">
+</head>
+
+<body>
+  <div class="page-header">
+  <h1>My Lotto Page</h1>
+  </div>
+  <div class="container lotto">
+    <h2>당첨 기원 (2)</h2>
+    <p> last update:2000/1/1</p>
+    <p> 1, 10, 15, 20, 30 </p>
+  </div>
+  <div class="table">
+    <table>
+        <caption>크롤링 리스트</caption>
+        <thead>
+            <tr>
+                <th scope="col">리스트SEQ</th>
+                <th scope="col">전체트윗 수량</th>
+                <th scope="col">크롤링 수량</th>
+                <th scope="col">성공횟수</th>
+                <th scope="col">실패횟수</th>
+                <th scope="col">긍정필터</th>
+                <th scope="col">부정필터</th>
+                <th scope="col">파일명</th>
+                <th scope="col">실행일자</th>
+                <th scope="col">완료일자</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in preList%}
+                <tr>
+                    <th scope="row">{{item.id}} </th>
+                    <td>{{item.ttlfeed}}</td>
+                    <td>{{item.crwfeed}}</td>
+                    <td>{{item.succnt}}</td>
+                    <td>{{item.failcnt}}</td>
+                    <td>{{item.filename}}</td>
+                    <td>{{item.created_at}}</td>
+                    <td>{{item.updated_at}}</td>
+                </tr>    
+            {% endfor %}
+        </tbody>
+    </table>   
+  </div>
+</body>
+</html>
